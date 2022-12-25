@@ -8,7 +8,7 @@
 ```shell
 cd github-scrapper
 go mod tidy
-go run main/main.go -org vuejs -user graydon
+go run main/main.go `-org` vuejs `-user` graydon
 ```
 - or you can build it
 ```shell
