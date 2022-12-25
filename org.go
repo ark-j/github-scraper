@@ -22,7 +22,7 @@ func Scrape(orgName string) {
 	for p := 1; p <= total; p++ {
 		// generate url per page
 		url := fmt.Sprintf("https://github.com/orgs/%s/repositories?page=%d", orgName, p)
-		ProcessPage(url, orgName, reposCh, &wg)
+		ProcessPage(true, url, orgName, reposCh, &wg)
 	}
 
 	wg.Wait()
@@ -52,43 +52,4 @@ func TotalPages(orgName string) int {
 		return pagesInt
 	}
 	return 1
-}
-
-// concurrently process per page
-func ProcessPage(url string, orgName string, ch chan<- *Repo, wg *sync.WaitGroup) {
-	defer wg.Done()
-	res, err := http.Get(url)
-	if err != nil {
-		log.Println(err)
-	}
-	defer res.Body.Close()
-
-	doc, err := goquery.NewDocumentFromReader(res.Body)
-	if err != nil {
-		log.Println(err)
-	}
-
-	selection := doc.Find("#org-repositories").Find("ul").Find("li")
-	selection.Each(ProcessRepo(orgName, ch))
-}
-
-// process repo data for single repo found
-func ProcessRepo(orgsName string, ch chan<- *Repo) func(i int, s *goquery.Selection) {
-	return func(i int, s *goquery.Selection) {
-		baseName := s.Find("a[itemprop='name codeRepository']")
-		title := ClearString(baseName.Text())
-		link, _ := baseName.Attr("href")
-		description := ClearString(s.Find("p[itemprop='description']").Text())
-		language := s.Find("span[itemprop='programmingLanguage']").Text()
-		forks := ClearString(s.Find(fmt.Sprintf("a[href='/%s/%s/network/members']", orgsName, title)).Text())
-		stars := ClearString(s.Find(fmt.Sprintf("a[href='/%s/%s/stargazers']", orgsName, title)).Text())
-		ch <- &Repo{
-			Title:       title,
-			Link:        URL + link,
-			Description: description,
-			Language:    language,
-			Forks:       forks,
-			Stars:       stars,
-		}
-	}
 }
