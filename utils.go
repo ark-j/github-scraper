@@ -83,12 +83,10 @@ func ProcessPage(isOrg bool, url string, entity string, ch chan<- *Repo, wg *syn
 		log.Println(err)
 	}
 	defer res.Body.Close()
-
 	doc, err := goquery.NewDocumentFromReader(res.Body)
 	if err != nil {
 		log.Println(err)
 	}
-
 	selection := doc.Find(id).Find("ul").Find("li")
 	selection.Each(ProcessRepo(entity, ch))
 }
