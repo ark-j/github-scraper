@@ -1,13 +1,10 @@
 package githubscrape
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"strconv"
-	"strings"
 	"sync"
 
 	"github.com/PuerkitoBio/goquery"
@@ -94,31 +91,4 @@ func ProcessRepo(orgsName string, ch chan<- *Repo) func(i int, s *goquery.Select
 			Stars:       stars,
 		}
 	}
-}
-
-// creates json file for per org
-func CreateFile(path string, ch <-chan *Repo) {
-	f, err := os.Create(path)
-	if err != nil {
-		log.Println(err)
-	}
-	defer f.Close()
-	var ll []*Repo
-	for i := range ch {
-		ll = append(ll, i)
-	}
-	b, _ := json.MarshalIndent(map[string]any{"count": len(ll), "repos": ll}, "", "  ")
-	f.Write(b)
-}
-
-// cleans the string
-func ClearString(s string) string {
-	return strings.Trim(
-		strings.ReplaceAll(
-			s,
-			"\n",
-			"",
-		),
-		" ",
-	)
 }

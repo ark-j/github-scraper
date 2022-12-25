@@ -1,12 +1,9 @@
 package githubscrape
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
-	"os"
-	"strings"
 	"sync"
 
 	"github.com/PuerkitoBio/goquery"
@@ -31,7 +28,7 @@ func ScrapeUser(userID string) {
 	close(reposUserCh)
 
 	// create file after closing channel
-	CreateFileUser(fmt.Sprintf("users/%s.json", userID), reposUserCh)
+	CreateFile(fmt.Sprintf("users/%s.json", userID), reposUserCh)
 }
 
 // get total pages of repositories
@@ -99,31 +96,4 @@ func ProcessRepoUser(userID string, ch chan<- *Repo) func(i int, s *goquery.Sele
 			Stars:       stars,
 		}
 	}
-}
-
-// creates json file for per org
-func CreateFileUser(path string, ch <-chan *Repo) {
-	f, err := os.Create(path)
-	if err != nil {
-		log.Println(err)
-	}
-	defer f.Close()
-	var ll []*Repo
-	for i := range ch {
-		ll = append(ll, i)
-	}
-	b, _ := json.MarshalIndent(map[string]any{"count": len(ll), "repos": ll}, "", "  ")
-	f.Write(b)
-}
-
-// cleans the string
-func ClearStringUser(s string) string {
-	return strings.Trim(
-		strings.ReplaceAll(
-			s,
-			"\n",
-			"",
-		),
-		" ",
-	)
 }
