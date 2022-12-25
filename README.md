@@ -7,8 +7,12 @@
 
 ```shell
 cd github-scrapper
+go mod tidy
 go run main/main.go -org vuejs -user graydon
 ```
-
+- or you can build it
+```shell
+go build -o github-scrapper main/main.go
+```
 ## TODO
 - add filter
