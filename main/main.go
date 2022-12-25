@@ -1,6 +1,8 @@
 package main
 
-import "githubscrape"
+import (
+	"githubscrape"
+)
 
 func main() {
 	// TODO: add github repo make changes -> push -> track
@@ -17,5 +19,4 @@ func main() {
 	githubscrape.ScrapeUser("spf13")
 	githubscrape.ScrapeUser("graydon")
 	githubscrape.ScrapeUser("Sajmani")
-	githubscrape.Scrape("google")
 }

@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strconv"
 	"strings"
 	"sync"
 
@@ -37,24 +36,30 @@ func ScrapeUser(userID string) {
 
 // get total pages of repositories
 func TotalPagesUser(userID string) int {
-	rootURL := fmt.Sprintf("https://github.com/%s?tab=repositories", userID)
-	res, err := http.Get(rootURL)
-	if err != nil {
-		log.Println(err)
-	}
-	defer res.Body.Close()
+	counter := 1
+	stopper := true
+	for stopper {
+		url := fmt.Sprintf("https://github.com/%s?tab=repositories&page=%d", userID, counter)
+		res, err := http.Get(url)
+		if err != nil {
+			log.Println(err)
+		}
+		defer res.Body.Close()
 
-	doc, err := goquery.NewDocumentFromReader(res.Body)
-	if err != nil {
-		log.Println(err)
-	}
+		doc, err := goquery.NewDocumentFromReader(res.Body)
+		if err != nil {
+			log.Println(err)
+		}
 
-	pages, ok := doc.Find("#user-repositories-list").Find("div.pagination").Find("em.current").Attr("data-total-pages")
-	if ok {
-		pagesInt, _ := strconv.Atoi(pages)
-		return pagesInt
+		_, ok := doc.Find("#user-repositories-list").Find("div.paginate-container").Find("a.next_page").Attr("href")
+		if ok {
+			stopper = true
+			counter += 1
+		} else {
+			stopper = false
+		}
 	}
-	return 1
+	return counter
 }
 
 // concurrently process per page
