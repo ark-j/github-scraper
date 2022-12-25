@@ -6,22 +6,22 @@ import (
 )
 
 // scrapes data of repos based on orgnizations name
-func Scrape(isOrg bool, entityID string) {
+func Scrape(isOrg bool, entityID string, f *Filter) {
 	var urlCreate func(s string, p int) string
 	var total int
 	var fpath string
 	switch {
 	case isOrg:
-		total = TotalPages(entityID)
+		total = TotalPages(entityID, f)
 		fpath = fmt.Sprintf("orgs/%s.json", entityID)
 		urlCreate = func(s string, p int) string {
-			return fmt.Sprintf("https://github.com/orgs/%s/repositories?page=%d", s, p)
+			return fmt.Sprintf("https://github.com/orgs/%s/repositories?page=%d&q=&type=%s&language=%s&sort=%s", s, p, f.Type, f.Lang, f.Sort)
 		}
 	case !isOrg:
-		total = TotalPagesUser(entityID)
+		total = TotalPagesUser(entityID, f)
 		fpath = fmt.Sprintf("users/%s.json", entityID)
 		urlCreate = func(s string, p int) string {
-			return fmt.Sprintf("https://github.com/%s?tab=repositories&page=%d", s, p)
+			return fmt.Sprintf("https://github.com/%s?tab=repositories&page=%d&q=&type=%s&language=%s&sort=%s", s, p, f.Type, f.Lang, f.Sort)
 		}
 	}
 

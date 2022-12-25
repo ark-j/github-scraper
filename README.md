@@ -14,5 +14,27 @@ go run main/main.go -org vuejs -user graydon
 ```shell
 go build -o github-scrapper main/main.go
 ```
-## TODO
-- add filter
+- you can add filter
+```shell
+go run main/main.go -user spf13 -type source -lang go -sort stargazers
+```
+- check filter list in help section
+```shell
+go run main/main.go -help
+  
+  -lang string
+        language filter for repositories
+        possible values -> go, html, javascript, java, rust,
+        python, typescript, css, haskell, shell, c++, c, ruby
+  -org string
+        github orgname for scraping information
+  -sort string
+        sort filter for repositories
+        possible value -> name, stargazers
+        leave empty for last updated sort
+  -type string
+        type filter for repositories
+        possible values -> source, forks, archived, mirror, template
+  -user string
+        github username for scraping information
+```

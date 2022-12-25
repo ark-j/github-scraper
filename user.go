@@ -9,14 +9,14 @@ import (
 )
 
 // get total pages of repositories
-func TotalPagesUser(userID string) int {
+func TotalPagesUser(userID string, f *Filter) int {
 	counter := 1
 	stopper := true
 	for stopper {
 		// start from root url
 		// by increasing counter
 		// so we can crawl next pages until none
-		url := fmt.Sprintf("https://github.com/%s?tab=repositories&page=%d", userID, counter)
+		url := fmt.Sprintf("https://github.com/%s?tab=repositories&page=%d&q=&type=%s&language=%s&sort=%s", userID, counter, f.Type, f.Lang, f.Sort)
 		res, err := http.Get(url)
 		if err != nil {
 			log.Println(err)

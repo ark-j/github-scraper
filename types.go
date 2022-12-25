@@ -8,3 +8,9 @@ type Repo struct {
 	Forks       string
 	Stars       string
 }
+
+type Filter struct {
+	Type string
+	Lang string
+	Sort string
+}
