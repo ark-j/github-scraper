@@ -19,9 +19,9 @@ func main() {
 		fmt.Println("please provide any user or org")
 	}
 	if *user != "" {
-		githubscrape.ScrapeUser(*user)
+		githubscrape.Scrape(false, *user)
 	}
 	if *org != "" {
-		githubscrape.Scrape(*org)
+		githubscrape.Scrape(true, *org)
 	}
 }
