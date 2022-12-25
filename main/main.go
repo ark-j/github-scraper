@@ -8,8 +8,8 @@ import (
 )
 
 func main() {
-	os.MkdirAll("./org", os.ModePerm)
-	os.MkdirAll("./user", os.ModePerm)
+	os.MkdirAll("./orgs", os.ModePerm)
+	os.MkdirAll("./users", os.ModePerm)
 
 	user := flag.String("user", "", "github username for scraping information")
 	org := flag.String("org", "", "github orgname for scraping information")
