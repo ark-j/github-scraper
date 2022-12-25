@@ -14,7 +14,7 @@ import (
 
 // scrapes data of repos based on orgnizations name
 func ScrapeUser(userID string) {
-	total := TotalPages(userID)
+	total := TotalPagesUser(userID)
 	// make chan of total available repos
 	// 1 page has 30 repos
 	reposUserCh := make(chan *Repo, total*30)
