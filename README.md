@@ -1,3 +1,6 @@
 # scraper for github repos
-- provide user name for user
-- provide org name for org
+github scraper is simple github repos scraper which generate result based on orgnization or user id provided.
+
+## things remaning to do
+- to add command line flags
+- to refactor code
