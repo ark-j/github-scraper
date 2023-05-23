@@ -7,8 +7,6 @@ import (
 	"strings"
 )
 
-const URL = "https://github.com"
-
 // creates json file for per org
 func CreateFile(path string, ch <-chan *Repo) {
 	f, err := os.Create(path)

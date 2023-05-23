@@ -1,14 +1,19 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
+	"log"
 	"os"
 
 	"githubscrape/internal"
 )
 
 func main() {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	os.MkdirAll("./orgs", os.ModePerm)
 	os.MkdirAll("./users", os.ModePerm)
 
@@ -20,14 +25,16 @@ func main() {
 	flag.Parse()
 
 	f := &internal.Filter{Type: *typef, Lang: *langf, Sort: *sortf}
-
+	logger := log.New(os.Stderr, "", log.Ltime|log.LstdFlags|log.Lshortfile)
+	reqwest := internal.NewReqwest()
+	scrapper := internal.NewScrapper(logger, reqwest)
 	if *org == "" && *user == "" {
 		fmt.Println("please provide any user or org")
 	}
 	if *user != "" {
-		internal.Scrape(false, *user, f)
+		scrapper.Scrape(ctx, false, *user, f)
 	}
 	if *org != "" {
-		internal.Scrape(true, *org, f)
+		scrapper.Scrape(ctx, true, *org, f)
 	}
 }
