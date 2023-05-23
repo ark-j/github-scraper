@@ -38,14 +38,14 @@ func (sc *Scrapper) Scrape(ctx context.Context, isOrg bool, entityID string, f *
 	var fpath, pageFrameID string
 	switch isOrg {
 	case true:
-		total = sc.TotalPagesOrg(ctx, entityID, f)
+		total = sc.TotalPagesOrg(ctx, entityID)
 		fpath = fmt.Sprintf("orgs/%s.json", entityID)
 		pageFrameID = "#org-repositories"
 		urlCreate = func(s string, p int) string {
 			return fmt.Sprintf(OrgURL, s, p, f.Type, f.Lang, f.Sort)
 		}
 	case false:
-		total = sc.TotalPagesUser(ctx, entityID, f)
+		total = sc.TotalPagesUser(ctx, entityID)
 		fpath = fmt.Sprintf("users/%s.json", entityID)
 		pageFrameID = "#user-repositories-list"
 		urlCreate = func(s string, p int) string {
@@ -74,34 +74,32 @@ func (sc *Scrapper) Scrape(ctx context.Context, isOrg bool, entityID string, f *
 }
 
 // TotalPagesUser method return count of pages present in User account
-func (sc *Scrapper) TotalPagesUser(ctx context.Context, userID string, f *Filter) int {
+func (sc *Scrapper) TotalPagesUser(ctx context.Context, userID string) int {
 	counter := 1
-	stopper := true
-	for stopper {
+	for {
 		// start from root url
 		// by increasing counter
 		// so we can crawl next pages until none
-		rootURL := fmt.Sprintf("https://github.com/%s?tab=repositories&page=%d&q=&type=%s&language=%s&sort=%s", userID, counter, f.Type, f.Lang, f.Sort)
+		rootURL := fmt.Sprintf("https://github.com/%s?tab=repositories&page=%d", userID, counter)
 		doc, err := sc.request.Source(ctx, rootURL)
 		if err != nil {
 			log.Println("msg=not able to parse body", "error=", err)
 			break
 		}
 		_, ok := doc.Find("#user-repositories-list").Find("div.paginate-container").Find("a.next_page").Attr("href")
-		if ok {
-			counter += 1
-		} else {
-			stopper = false
+		if !ok {
+			break
 		}
+		counter += 1
 	}
 	sc.log.Printf("INFO user_id=%s pages=%d\n", userID, counter)
 	return counter
 }
 
 // TotalPagesOrg method return count of pages present in orgnization account
-func (sc *Scrapper) TotalPagesOrg(ctx context.Context, orgName string, f *Filter) int {
+func (sc *Scrapper) TotalPagesOrg(ctx context.Context, orgName string) int {
 	pageCount := 1
-	rootURL := fmt.Sprintf("https://github.com/orgs/%s/repositories?q=&type=%s&language=%s&sort=%s", orgName, f.Type, f.Lang, f.Sort)
+	rootURL := fmt.Sprintf("https://github.com/orgs/%s/repositories", orgName)
 	doc, err := sc.request.Source(ctx, rootURL)
 	if err != nil {
 		sc.log.Println("msg=not able to parse body", "error=", err)
