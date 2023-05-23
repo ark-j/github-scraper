@@ -1,4 +1,4 @@
-package githubscrape
+package internal
 
 type Repo struct {
 	Title       string

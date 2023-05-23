@@ -3,8 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
-	"githubscrape"
 	"os"
+
+	"githubscrape/internal"
 )
 
 func main() {
@@ -18,15 +19,15 @@ func main() {
 	org := flag.String("org", "", "github orgname for scraping information")
 	flag.Parse()
 
-	f := &githubscrape.Filter{Type: *typef, Lang: *langf, Sort: *sortf}
+	f := &internal.Filter{Type: *typef, Lang: *langf, Sort: *sortf}
 
 	if *org == "" && *user == "" {
 		fmt.Println("please provide any user or org")
 	}
 	if *user != "" {
-		githubscrape.Scrape(false, *user, f)
+		internal.Scrape(false, *user, f)
 	}
 	if *org != "" {
-		githubscrape.Scrape(true, *org, f)
+		internal.Scrape(true, *org, f)
 	}
 }

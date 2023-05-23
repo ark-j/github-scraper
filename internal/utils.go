@@ -1,4 +1,4 @@
-package githubscrape
+package internal
 
 import (
 	"encoding/json"

@@ -1,4 +1,4 @@
-package githubscrape
+package internal
 
 const URL = "https://github.com"
 
