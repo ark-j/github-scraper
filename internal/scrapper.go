@@ -42,14 +42,14 @@ func (sc *Scrapper) Scrape(ctx context.Context, isOrg bool, entityID string, f *
 		fpath = fmt.Sprintf("orgs/%s.json", entityID)
 		pageFrameID = "#org-repositories"
 		urlCreate = func(s string, p int) string {
-			return fmt.Sprintf("https://github.com/orgs/%s/repositories?page=%d&q=&type=%s&language=%s&sort=%s", s, p, f.Type, f.Lang, f.Sort)
+			return fmt.Sprintf(OrgURL, s, p, f.Type, f.Lang, f.Sort)
 		}
 	case false:
 		total = sc.TotalPagesUser(ctx, entityID, f)
 		fpath = fmt.Sprintf("users/%s.json", entityID)
 		pageFrameID = "#user-repositories-list"
 		urlCreate = func(s string, p int) string {
-			return fmt.Sprintf("https://github.com/%s?tab=repositories&page=%d&q=&type=%s&language=%s&sort=%s", s, p, f.Type, f.Lang, f.Sort)
+			return fmt.Sprintf(UserURL, s, p, f.Type, f.Lang, f.Sort)
 		}
 	}
 
@@ -73,7 +73,7 @@ func (sc *Scrapper) Scrape(ctx context.Context, isOrg bool, entityID string, f *
 	CreateFile(fpath, reposCh)
 }
 
-// get total pages of repositories
+// TotalPagesUser method return count of pages present in User account
 func (sc *Scrapper) TotalPagesUser(ctx context.Context, userID string, f *Filter) int {
 	counter := 1
 	stopper := true
@@ -98,7 +98,7 @@ func (sc *Scrapper) TotalPagesUser(ctx context.Context, userID string, f *Filter
 	return counter
 }
 
-// get total pages of repositories
+// TotalPagesOrg method return count of pages present in orgnization account
 func (sc *Scrapper) TotalPagesOrg(ctx context.Context, orgName string, f *Filter) int {
 	pageCount := 1
 	rootURL := fmt.Sprintf("https://github.com/orgs/%s/repositories?q=&type=%s&language=%s&sort=%s", orgName, f.Type, f.Lang, f.Sort)
@@ -114,8 +114,7 @@ func (sc *Scrapper) TotalPagesOrg(ctx context.Context, orgName string, f *Filter
 	return pageCount
 }
 
-// concurrently process per page for user or org
-// of user then org should be false
+// ProcessPage method finds all attribute of all repo present in one page and send it to repo chan
 func (sc *Scrapper) ProcessPage(ctx context.Context, ch chan<- *Repo, wg *sync.WaitGroup, pageFrameID, URL, entity string) {
 	defer wg.Done()
 	doc, err := sc.request.Source(ctx, URL)
