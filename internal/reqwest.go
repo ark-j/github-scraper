@@ -11,18 +11,20 @@ import (
 )
 
 type Reqwest struct {
+	// http client
 	client *http.Client
 }
 
+// NewReqwest return instance of Reqwest with preconfigured http.Client
 func NewReqwest() *Reqwest {
 	return &Reqwest{
 		client: &http.Client{
-			Timeout: 30 * time.Second,
+			Timeout: 20 * time.Second,
 			Transport: &http.Transport{
-				MaxIdleConns:        100,
-				MaxConnsPerHost:     5,
-				MaxIdleConnsPerHost: 5,
-				IdleConnTimeout:     30 * time.Second,
+				MaxIdleConns:        32,
+				MaxConnsPerHost:     4,
+				MaxIdleConnsPerHost: 4,
+				IdleConnTimeout:     60 * time.Second,
 				DisableKeepAlives:   false,
 				Dial: (&net.Dialer{
 					Timeout: 5 * time.Second,
@@ -33,6 +35,9 @@ func NewReqwest() *Reqwest {
 	}
 }
 
+// Source method performs get request on url,
+// parses the response body into goquery.Document
+// and returns it if there is no error
 func (rq *Reqwest) Source(ctx context.Context, u string) (*goquery.Document, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u, nil)
 	if err != nil {

@@ -18,7 +18,7 @@ const URL = "https://github.com"
 func CreateFile(path string, ch <-chan *Repo) {
 	f, err := os.Create(path)
 	if err != nil {
-		log.Println("msg=can't create file", "error=", err)
+		log.Println("ERROR", "msg=can't create file", "error=", err)
 	}
 	defer f.Close()
 	var ll []*Repo
@@ -31,14 +31,7 @@ func CreateFile(path string, ch <-chan *Repo) {
 
 // cleans the string
 func ClearString(s string) string {
-	return strings.Trim(
-		strings.ReplaceAll(
-			s,
-			"\n",
-			"",
-		),
-		" ",
-	)
+	return strings.TrimSpace(strings.ReplaceAll(s, "\n", ""))
 }
 
 // process repo data for single repo found
@@ -75,12 +68,12 @@ func ProcessPage(isOrg bool, url string, entity string, ch chan<- *Repo, wg *syn
 	}
 	res, err := http.Get(url)
 	if err != nil {
-		log.Println("msg=not able to get request", "error=", err)
+		log.Println("ERROR", "msg=not able to get request", "error=", err)
 	}
 	defer res.Body.Close()
 	doc, err := goquery.NewDocumentFromReader(res.Body)
 	if err != nil {
-		log.Println("msg=not able to parse body", "error=", err)
+		log.Println("ERROR", "msg=not able to parse body", "error=", err)
 	}
 	selection := doc.Find(id).Find("ul").Find("li")
 	selection.Each(ProcessRepo(entity, ch))
