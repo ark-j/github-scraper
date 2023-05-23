@@ -35,17 +35,19 @@ func NewScrapper(log *log.Logger, request *Reqwest) *Scrapper {
 func (sc *Scrapper) Scrape(ctx context.Context, isOrg bool, entityID string, f *Filter) {
 	var urlCreate func(s string, p int) string
 	var total int
-	var fpath string
-	switch {
-	case isOrg:
+	var fpath, pageFrameID string
+	switch isOrg {
+	case true:
 		total = sc.TotalPagesOrg(ctx, entityID, f)
 		fpath = fmt.Sprintf("orgs/%s.json", entityID)
+		pageFrameID = "#org-repositories"
 		urlCreate = func(s string, p int) string {
 			return fmt.Sprintf("https://github.com/orgs/%s/repositories?page=%d&q=&type=%s&language=%s&sort=%s", s, p, f.Type, f.Lang, f.Sort)
 		}
-	case !isOrg:
+	case false:
 		total = sc.TotalPagesUser(ctx, entityID, f)
 		fpath = fmt.Sprintf("users/%s.json", entityID)
+		pageFrameID = "#user-repositories-list"
 		urlCreate = func(s string, p int) string {
 			return fmt.Sprintf("https://github.com/%s?tab=repositories&page=%d&q=&type=%s&language=%s&sort=%s", s, p, f.Type, f.Lang, f.Sort)
 		}
@@ -58,8 +60,8 @@ func (sc *Scrapper) Scrape(ctx context.Context, isOrg bool, entityID string, f *
 	wg.Add(total)
 	for p := 1; p <= total; p++ {
 		// generate url per page
-		url := urlCreate(entityID, p)
-		go sc.ProcessPage(ctx, isOrg, url, entityID, reposCh, &wg)
+		URL := urlCreate(entityID, p)
+		go sc.ProcessPage(ctx, reposCh, &wg, pageFrameID, URL, entityID)
 	}
 
 	go func() {
@@ -87,7 +89,6 @@ func (sc *Scrapper) TotalPagesUser(ctx context.Context, userID string, f *Filter
 		}
 		_, ok := doc.Find("#user-repositories-list").Find("div.paginate-container").Find("a.next_page").Attr("href")
 		if ok {
-			stopper = true
 			counter += 1
 		} else {
 			stopper = false
@@ -115,41 +116,31 @@ func (sc *Scrapper) TotalPagesOrg(ctx context.Context, orgName string, f *Filter
 
 // concurrently process per page for user or org
 // of user then org should be false
-func (sc *Scrapper) ProcessPage(ctx context.Context, isOrg bool, URL string, entity string, ch chan<- *Repo, wg *sync.WaitGroup) {
+func (sc *Scrapper) ProcessPage(ctx context.Context, ch chan<- *Repo, wg *sync.WaitGroup, pageFrameID, URL, entity string) {
 	defer wg.Done()
-	var id string
-	switch isOrg {
-	case false:
-		id = "#user-repositories-list"
-	case true:
-		id = "#org-repositories"
-	}
 	doc, err := sc.request.Source(ctx, URL)
 	if err != nil {
 		sc.log.Println("ERROR", "error=", err)
 	}
 	// all the repos are in unorderd list
-	selection := doc.Find(id).Find("ul").Find("li")
-	selection.Each(ProcessRepo(entity, ch))
-}
-
-// process repo data for single repo found
-func ProcessRepo(entity string, ch chan<- *Repo) func(i int, s *goquery.Selection) {
-	return func(i int, s *goquery.Selection) {
-		baseName := s.Find("a[itemprop='name codeRepository']")
-		title := ClearString(baseName.Text())
-		link, _ := baseName.Attr("href")
-		description := ClearString(s.Find("p[itemprop='description']").Text())
-		language := s.Find("span[itemprop='programmingLanguage']").Text()
-		forks := ClearString(s.Find(fmt.Sprintf("a[href='/%s/%s/network/members']", entity, title)).Text())
-		stars := ClearString(s.Find(fmt.Sprintf("a[href='/%s/%s/stargazers']", entity, title)).Text())
-		ch <- &Repo{
-			Title:       title,
-			Link:        BaseURL + link,
-			Description: description,
-			Language:    language,
-			Forks:       forks,
-			Stars:       stars,
-		}
-	}
+	doc.Find(pageFrameID).
+		Find("ul").
+		Find("li").
+		Each(func(i int, s *goquery.Selection) {
+			baseName := s.Find("a[itemprop='name codeRepository']")
+			title := ClearString(baseName.Text())
+			link, _ := baseName.Attr("href")
+			description := ClearString(s.Find("p[itemprop='description']").Text())
+			language := s.Find("span[itemprop='programmingLanguage']").Text()
+			forks := ClearString(s.Find(fmt.Sprintf("a[href='/%s/%s/network/members']", entity, title)).Text())
+			stars := ClearString(s.Find(fmt.Sprintf("a[href='/%s/%s/stargazers']", entity, title)).Text())
+			ch <- &Repo{
+				Title:       title,
+				Link:        BaseURL + link,
+				Description: description,
+				Language:    language,
+				Forks:       forks,
+				Stars:       stars,
+			}
+		})
 }
