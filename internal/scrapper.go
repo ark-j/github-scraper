@@ -2,8 +2,18 @@ package internal
 
 import (
 	"fmt"
+	"log"
 	"sync"
 )
+
+type Scrapper struct {
+	log     *log.Logger
+	request *Reqwest
+}
+
+func NewScrapper(log *log.Logger, request *Reqwest) *Scrapper {
+	return &Scrapper{log: log, request: request}
+}
 
 // scrapes data of repos based on orgnizations name
 func Scrape(isOrg bool, entityID string, f *Filter) {
