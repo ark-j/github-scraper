@@ -11,6 +11,7 @@ import (
 
 // get total pages of repositories
 func TotalPages(orgName string, f *Filter) int {
+	pageCount := 1
 	rootURL := fmt.Sprintf("https://github.com/orgs/%s/repositories?q=&type=%s&language=%s&sort=%s", orgName, f.Type, f.Lang, f.Sort)
 	res, err := http.Get(rootURL)
 	if err != nil {
@@ -25,8 +26,8 @@ func TotalPages(orgName string, f *Filter) int {
 
 	pages, ok := doc.Find("#org-repositories").Find("div.pagination").Find("em.current").Attr("data-total-pages")
 	if ok {
-		pagesInt, _ := strconv.Atoi(pages)
-		return pagesInt
+		pageCount, _ = strconv.Atoi(pages)
 	}
-	return 1
+	log.Printf("INFO org_name=%s msg=page count %d\n", orgName, pageCount)
+	return pageCount
 }

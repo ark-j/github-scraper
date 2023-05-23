@@ -34,5 +34,6 @@ func TotalPagesUser(userID string, f *Filter) int {
 			stopper = false
 		}
 	}
+	log.Printf("INFO user_id=%s msg=page count %d\n", userID, counter)
 	return counter
 }
