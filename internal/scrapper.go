@@ -6,16 +6,30 @@ import (
 	"sync"
 )
 
+const (
+	PerPageRepos = 30
+	OrgURL       = "https://github.com/orgs/%s/repositories?page=%d&q=&type=%s&language=%s&sort=%s"
+	UserURL      = "https://github.com/%s?tab=repositories&page=%d&q=&type=%s&language=%s&sort=%s"
+)
+
 type Scrapper struct {
 	log     *log.Logger
 	request *Reqwest
+	reposCh chan *Repo
 }
 
 func NewScrapper(log *log.Logger, request *Reqwest) *Scrapper {
-	return &Scrapper{log: log, request: request}
+	return &Scrapper{
+		log:     log,
+		request: request,
+		reposCh: make(chan *Repo, PerPageRepos),
+	}
 }
 
-// scrapes data of repos based on orgnizations name
+// Scrape scrapes the data of repos based on entity id provided,
+// it first require you to tell if entity is orgnization or not,
+// after that it gets the total pages and process perpage. finally
+// appending all data to repos chan
 func Scrape(isOrg bool, entityID string, f *Filter) {
 	var urlCreate func(s string, p int) string
 	var total int
