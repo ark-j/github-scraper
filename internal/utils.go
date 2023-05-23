@@ -12,6 +12,8 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
+const URL = "https://github.com"
+
 func CreateFilter(typef, langf, sortf, entity string, org bool) string {
 	if org {
 		return fmt.Sprintf("https://github.com/orgs/%s/repositories?q=&type=%s&language=%s&sort=%s", entity, typef, langf, sortf)
