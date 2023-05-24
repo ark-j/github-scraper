@@ -2,8 +2,10 @@ package internal
 
 import (
 	"context"
+	"encoding/csv"
 	"fmt"
 	"log"
+	"os"
 	"strconv"
 	"sync"
 
@@ -140,4 +142,20 @@ func (sc *Scrapper) ProcessPage(ctx context.Context, ch chan<- *Repo, wg *sync.W
 				Stars:       stars,
 			}
 		})
+}
+
+func (sc *Scrapper) SaveCSV(fpath string, ch <-chan *Repo) error {
+	f, err := os.Create(fpath)
+	if err != nil {
+		return err
+	}
+	cw := csv.NewWriter(f)
+	for line := range ch {
+		err := cw.Write([]string{line.Title, line.Link, line.Description, line.Language, line.Forks, line.Stars})
+		if err != nil {
+			sc.log.Printf("ERROR msg=error while adding csv record  err=%v\n", err)
+		}
+	}
+	cw.Flush()
+	return f.Close()
 }
