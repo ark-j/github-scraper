@@ -18,15 +18,28 @@ const (
 	BaseURL = "https://github.com"
 )
 
+type SaveFormat int
+
+const (
+	CSV SaveFormat = iota
+	JSON
+)
+
+func (sf SaveFormat) String() string {
+	return [...]string{"json", "csv"}[sf]
+}
+
 type Scrapper struct {
 	log     *log.Logger
 	request *Reqwest
+	format  SaveFormat
 }
 
-func NewScrapper(log *log.Logger, request *Reqwest) *Scrapper {
+func NewScrapper(log *log.Logger, request *Reqwest, format SaveFormat) *Scrapper {
 	return &Scrapper{
 		log:     log,
 		request: request,
+		format:  format,
 	}
 }
 
